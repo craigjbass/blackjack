@@ -31,7 +31,7 @@ public class BlackjackTest implements Presenter {
     }
 
     @Override
-    public void presentHand(PresentableHand hand) {
+    public void presentPlayersHand(PresentableHand hand) {
         handValue = hand.value;
         for (Card card : hand.cards) cardsReceived += toString(card) + " ";
         cardsReceived = cardsReceived.trim();

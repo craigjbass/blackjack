@@ -1,5 +1,6 @@
 package uk.co.craigbass.blackjack;
 
+import uk.co.craigbass.blackjack.Blackjack.Presenter.PresentableHand;
 import uk.co.craigbass.playingcards.Card;
 import uk.co.craigbass.blackjack.domain.BlackjackHand;
 
@@ -23,20 +24,19 @@ public class Blackjack {
         table.giveDealerCard(pack.next());
         table.giveDealerCard(pack.next());
 
-        presentHand();
-        presenter.presentDealersFirstCard(table.getDealersHand().getCards()[0]);
+        presentPlayersHand(table.getPlayersHand());
+        presentDealersFirstCard(table.getDealersHand());
     }
 
-    private void presentHand() {
-        BlackjackHand blackjackHand = table.getPlayersHand();
+    private void presentDealersFirstCard(BlackjackHand dealersHand) {
+        presenter.presentDealersFirstCard(dealersHand.firstCard());
+    }
 
-        Card[] cards = blackjackHand.getCards();
-
-        Presenter.PresentableHand presentableHand = new Presenter.PresentableHand();
-        presentableHand.cards = cards;
-        presentableHand.value = blackjackHand.getValue();
-
-        presenter.presentHand(presentableHand);
+    private void presentPlayersHand(BlackjackHand playersHand) {
+        PresentableHand presentableHand = new PresentableHand();
+        presentableHand.cards = playersHand.getCards();
+        presentableHand.value = playersHand.getValue();
+        presenter.presentPlayersHand(presentableHand);
     }
 
     public void stick() {
@@ -51,9 +51,9 @@ public class Blackjack {
     }
 
     public interface Presenter {
-        void presentHand(PresentableHand cards);
-        void gameOver(Ending ending);
+        void presentPlayersHand(PresentableHand cards);
         void presentDealersFirstCard(Card card);
+        void gameOver(Ending ending);
 
         enum Ending { PLAYER_WINS }
         class PresentableHand {

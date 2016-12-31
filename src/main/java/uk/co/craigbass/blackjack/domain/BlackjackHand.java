@@ -21,6 +21,10 @@ public class BlackjackHand extends Hand {
         return new BlackjackHand(cards.stream().collect(Collectors.toList()));
     }
 
+    public Card firstCard() {
+        return getCardsStream().findFirst().get();
+    }
+
     public int getValue() {
         int value = getCardsStream()
                 .mapToInt(this::getBlackjackFaceValue)
