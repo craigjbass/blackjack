@@ -24,6 +24,7 @@ public class Blackjack {
         table.giveDealerCard(pack.next());
 
         presentHand();
+        presenter.presentDealersFirstCard(table.getDealersHand().getCards()[0]);
     }
 
     private void presentHand() {
@@ -46,11 +47,14 @@ public class Blackjack {
         void givePlayerCard(Card card);
         void giveDealerCard(Card card);
         BlackjackHand getPlayersHand();
+        BlackjackHand getDealersHand();
     }
 
     public interface Presenter {
         void presentHand(PresentableHand cards);
         void gameOver(Ending ending);
+        void presentDealersFirstCard(Card card);
+
         enum Ending { PLAYER_WINS }
         class PresentableHand {
             public int value;

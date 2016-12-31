@@ -6,7 +6,8 @@ import uk.co.craigbass.blackjack.domain.BlackjackHand;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static uk.co.craigbass.blackjack.domain.BlackjackHand.handFromCards;
 
 public class InMemoryTable implements Table {
     private final ArrayList<Card> playersCards = new ArrayList<>();
@@ -25,6 +26,11 @@ public class InMemoryTable implements Table {
     }
 
     public BlackjackHand getPlayersHand() {
-        return new BlackjackHand(playersCards.stream().collect(Collectors.toList()));
+        return handFromCards(playersCards);
+    }
+
+    @Override
+    public BlackjackHand getDealersHand() {
+        return handFromCards(dealerCards);
     }
 }

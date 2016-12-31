@@ -3,7 +3,9 @@ package uk.co.craigbass.blackjack.domain;
 import uk.co.craigbass.playingcards.Card;
 import uk.co.craigbass.playingcards.Hand;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static uk.co.craigbass.playingcards.Card.Value.Ace;
@@ -13,6 +15,10 @@ public class BlackjackHand extends Hand {
 
     public BlackjackHand(List<Card> cards) {
         super(cards);
+    }
+
+    public static BlackjackHand handFromCards(List<Card> cards) {
+        return new BlackjackHand(cards.stream().collect(Collectors.toList()));
     }
 
     public int getValue() {

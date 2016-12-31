@@ -24,17 +24,27 @@ public class BlackjackTest implements Presenter {
     private ConfigurableLoopingPack pack;
     private int handValue;
     private Boolean playerHasWon = null;
+    private String dealersFaceUpCard;
+
+    private String toString(Card card) {
+        return card.getValue() + " " + card.getSuit();
+    }
 
     @Override
     public void presentHand(PresentableHand hand) {
         handValue = hand.value;
-        for (Card card : hand.cards) cardsReceived += card.getValue() + " " + card.getSuit() + " ";
+        for (Card card : hand.cards) cardsReceived += toString(card) + " ";
         cardsReceived = cardsReceived.trim();
     }
 
     @Override
     public void gameOver(Ending ending) {
         playerHasWon = ending.equals(Ending.PLAYER_WINS);
+    }
+
+    @Override
+    public void presentDealersFirstCard(Card card) {
+        dealersFaceUpCard = toString(card);
     }
 
     @Before
@@ -116,8 +126,13 @@ public class BlackjackTest implements Presenter {
             assertEquals("Ace Spade Two Diamond", cardsReceived);
             assertEquals(13, handValue);
         }
-    }
 
+        @Test
+        public void dealersFirstCardIsPresented() {
+            blackjack.deal();
+            assertEquals("Four Heart", dealersFaceUpCard);
+        }
+    }
 
     public class GivenPlayerWinsNaturally {
         private void winningHand() {
@@ -141,6 +156,12 @@ public class BlackjackTest implements Presenter {
             @Before
             public void setUp() {
                 handOf17();
+            }
+
+            @Test
+            public void dealersFirstCardIsPresented() {
+                blackjack.deal();
+                assertEquals("Two Spade", dealersFaceUpCard);
             }
 
             @Test
