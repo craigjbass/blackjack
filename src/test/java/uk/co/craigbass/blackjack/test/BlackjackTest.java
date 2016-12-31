@@ -66,7 +66,7 @@ public class BlackjackTest implements Presenter {
         blackjack.deal();
         assertEquals(12, handValue);
     }
-    
+
     public class WhenPackRepeatsCardsAceTwoFourQueen {
         @Before
         public void setUp() {
@@ -75,6 +75,7 @@ public class BlackjackTest implements Presenter {
             pack.add(new Card(Heart, Four));
             pack.add(new Card(Club, Queen));
         }
+
         @Test
         public void playersCardsAreStored() {
             blackjack.deal();
@@ -124,25 +125,31 @@ public class BlackjackTest implements Presenter {
             pack.add(new Card(Heart, Jack));
         }
 
-        private void losingHand() {
-            pack.add(new Card(Spade, Two));
-            pack.add(new Card(Diamond, Three));
-            pack.add(new Card(Diamond, King));
-        }
-
         @Before
-        public void setUp()
-        {
+        public void setUp() {
             winningHand();
-            losingHand();
         }
 
-        @Test
-        public void ThenThePlayerHasWon() {
-            blackjack.deal();
-            blackjack.stick();
+        public class AndDealerGets17 {
+            private void handOf17() {
+                pack.add(new Card(Spade, Two));
+                pack.add(new Card(Diamond, Three));
+                pack.add(new Card(Diamond, Five));
+                pack.add(new Card(Diamond, Seven));
+            }
 
-            assertTrue(playerHasWon);
+            @Before
+            public void setUp() {
+                handOf17();
+            }
+
+            @Test
+            public void ThenThePlayerHasWon() {
+                blackjack.deal();
+                blackjack.stick();
+
+                assertTrue(playerHasWon);
+            }
         }
     }
 }
