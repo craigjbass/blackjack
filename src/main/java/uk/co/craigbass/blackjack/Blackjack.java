@@ -50,7 +50,7 @@ public class Blackjack {
 
     public interface Presenter {
         void presentHand(PresentableHand cards);
-        void gameOver(Ending playerWins);
+        void gameOver(Ending ending);
         enum Ending { PLAYER_WINS }
         class PresentableHand {
             public int value;
