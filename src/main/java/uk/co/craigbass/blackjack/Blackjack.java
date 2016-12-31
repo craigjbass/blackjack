@@ -1,31 +1,51 @@
 package uk.co.craigbass.blackjack;
 
-import java.util.List;
+import uk.co.craigbass.playingcards.Card;
+import uk.co.craigbass.blackjack.domain.BlackjackHand;
 
 public class Blackjack {
-
-    private GameState gameState;
+    private Table table;
     private Presenter presenter;
     private Pack pack;
 
-    public Blackjack(GameState gameState, Presenter presenter, Pack pack) {
-        this.gameState = gameState;
+    public Blackjack(Table table, Presenter presenter, Pack pack) {
+        this.table = table;
         this.presenter = presenter;
         this.pack = pack;
     }
 
     public void deal() {
-        gameState.putPlayerCard(pack.next());
-        gameState.putPlayerCard(pack.next());
+        table.givePlayerCard(pack.next());
+        table.givePlayerCard(pack.next());
 
-        gameState.putDealerCard(pack.next());
-        gameState.putDealerCard(pack.next());
+        table.giveDealerCard(pack.next());
+        table.giveDealerCard(pack.next());
 
-        List<Card> playerCards = gameState.getPlayerCards();
-        presenter.presentHand(playerCards.toArray(new Card[playerCards.size()]));
+        presentHand();
     }
 
-    interface Presenter {
-        void presentHand(Card[] cards);
+    private void presentHand() {
+        BlackjackHand blackjackHand = table.getPlayersHand();
+
+        Card[] cards = blackjackHand.getCards();
+
+        Presenter.PresentableHand presentableHand = new Presenter.PresentableHand();
+        presentableHand.cards = cards;
+        presentableHand.value = blackjackHand.getValue();
+
+        presenter.presentHand(presentableHand);
+    }
+
+    public interface Table {
+        void givePlayerCard(Card next);
+        void giveDealerCard(Card next);
+        BlackjackHand getPlayersHand();
+    }
+    public interface Presenter {
+        void presentHand(PresentableHand cards);
+        class PresentableHand {
+            public int value;
+            public Card[] cards;
+        }
     }
 }
