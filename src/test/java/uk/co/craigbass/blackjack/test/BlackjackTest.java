@@ -11,8 +11,8 @@ import uk.co.craigbass.playingcards.Card;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static uk.co.craigbass.blackjack.Blackjack.Presenter.Ending.DEALER_WINS;
 import static uk.co.craigbass.playingcards.Card.Suit.*;
 import static uk.co.craigbass.playingcards.Card.Value.*;
 
@@ -20,11 +20,33 @@ import static uk.co.craigbass.playingcards.Card.Value.*;
 public class BlackjackTest implements Presenter {
     private InMemoryTable table;
     private Blackjack blackjack;
-    private String cardsReceived = "";
+    private String cardsReceived;
     private ConfigurableLoopingPack pack;
     private int handValue;
-    private Boolean playerHasWon = null;
     private String dealersFaceUpCard;
+
+    private Ending ending;
+
+    private void assertGameIsDrawn() {
+        assertPlayerHasLost();
+        assertDealerHasLost();
+    }
+
+    private void assertDealerHasWon() {
+        assertEquals(ending, DEALER_WINS);
+    }
+
+    private void assertPlayerHasWon() {
+        assertEquals(ending, Ending.PLAYER_WINS);
+    }
+
+    private void assertPlayerHasLost() {
+        assertNotEquals(ending, Ending.PLAYER_WINS);
+    }
+
+    private void assertDealerHasLost() {
+        assertNotEquals(ending, DEALER_WINS);
+    }
 
     private String toString(Card card) {
         return card.getValue() + " " + card.getSuit();
@@ -32,6 +54,7 @@ public class BlackjackTest implements Presenter {
 
     @Override
     public void presentPlayersHand(PresentableHand hand) {
+        cardsReceived = "";
         handValue = hand.value;
         for (Card card : hand.cards) cardsReceived += toString(card) + " ";
         cardsReceived = cardsReceived.trim();
@@ -39,7 +62,7 @@ public class BlackjackTest implements Presenter {
 
     @Override
     public void gameOver(Ending ending) {
-        playerHasWon = ending.equals(Ending.PLAYER_WINS);
+        this.ending = ending;
     }
 
     @Override
@@ -78,6 +101,7 @@ public class BlackjackTest implements Presenter {
     }
 
     public class WhenPackRepeatsCardsAceTwoFourQueen {
+
         @Before
         public void setUp() {
             pack.add(new Card(Spade, Ace));
@@ -132,9 +156,11 @@ public class BlackjackTest implements Presenter {
             blackjack.deal();
             assertEquals("Four Heart", dealersFaceUpCard);
         }
+
     }
 
     public class GivenPlayerWinsNaturally {
+
         private void winningHand() {
             pack.add(new Card(Diamond, Ace));
             pack.add(new Card(Heart, Jack));
@@ -146,6 +172,7 @@ public class BlackjackTest implements Presenter {
         }
 
         public class AndDealerGets17 {
+
             private void handOf17() {
                 pack.add(new Card(Spade, Two));
                 pack.add(new Card(Diamond, Three));
@@ -169,8 +196,121 @@ public class BlackjackTest implements Presenter {
                 blackjack.deal();
                 blackjack.stick();
 
-                assertTrue(playerHasWon);
+                assertPlayerHasWon();
             }
         }
+
     }
+
+    @Test
+    public void GivenPlayerHits_ThenPresentsNewHand() {
+        pack.add(new Card(Diamond, Jack));
+        pack.add(new Card(Diamond, Two));
+
+        pack.add(new Card(Diamond, Two));
+        pack.add(new Card(Diamond, Two));
+
+        pack.add(new Card(Spade, Jack));
+
+        blackjack.deal();
+        blackjack.hit();
+
+        assertEquals("Jack Diamond Two Diamond Jack Spade", cardsReceived);
+    }
+
+    @Test
+    public void GivenPlayerBusts_ThenDealerWins() {
+        pack.add(new Card(Diamond, Jack));
+        pack.add(new Card(Diamond, Two));
+
+        pack.add(new Card(Diamond, Two));
+        pack.add(new Card(Diamond, Two));
+
+        pack.add(new Card(Spade, Jack));
+
+        blackjack.deal();
+        blackjack.hit();
+
+        assertDealerHasWon();
+    }
+
+    @Test
+    public void GivenPlayerDoesNotBust_AndHasBetterHand_ThenPlayerWins() {
+        pack.add(new Card(Diamond, Eight));
+        pack.add(new Card(Diamond, Two));
+
+        pack.add(new Card(Diamond, Jack));
+        pack.add(new Card(Diamond, Seven));
+
+        pack.add(new Card(Spade, Jack));
+
+        blackjack.deal();
+        blackjack.hit();
+        blackjack.stick();
+
+        assertPlayerHasWon();
+    }
+
+    @Test
+    public void GivenDealerBusts_ThenPlayerWins() {
+        pack.add(new Card(Diamond, Two));
+        pack.add(new Card(Diamond, Two));
+
+        pack.add(new Card(Diamond, Jack));
+        pack.add(new Card(Diamond, Two));
+        pack.add(new Card(Spade, Jack));
+
+        blackjack.deal();
+        blackjack.stick();
+
+        assertPlayerHasWon();
+    }
+
+    @Test
+    public void GivenPlayerHasBlackJack_AndDealerGetsBlackJack_ThenDraw() {
+        pack.add(new Card(Diamond, Ace));
+        pack.add(new Card(Diamond, Jack));
+
+        pack.add(new Card(Diamond, Five));
+        pack.add(new Card(Diamond, Ace));
+
+        pack.add(new Card(Spade, Five));
+
+        blackjack.deal();
+        blackjack.stick();
+
+        assertGameIsDrawn();
+    }
+
+    @Test
+    public void GivenPlayerHasBlackJack_AndDealerGetsBlackJackWithTwoHits_ThenDraw() {
+        pack.add(new Card(Diamond, Ace));
+        pack.add(new Card(Diamond, Jack));
+
+        pack.add(new Card(Diamond, Two));
+        pack.add(new Card(Diamond, Ace));
+
+        pack.add(new Card(Spade, Two));
+        pack.add(new Card(Spade, Six));
+
+        blackjack.deal();
+        blackjack.stick();
+
+        assertGameIsDrawn();
+    }
+
+    @Test
+    public void GivenDealerHasBetterHand_ThenDealerWins() {
+        pack.add(new Card(Diamond, Two));
+        pack.add(new Card(Diamond, Ten));
+
+        pack.add(new Card(Diamond, Ten));
+        pack.add(new Card(Diamond, Eight));
+
+        blackjack.deal();
+        blackjack.stick();
+
+        assertDealerHasWon();
+    }
+
 }

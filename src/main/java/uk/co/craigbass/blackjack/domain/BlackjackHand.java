@@ -34,6 +34,10 @@ public class BlackjackHand extends Hand {
         return value;
     }
 
+    public boolean isBust() {
+        return isBust(getValue());
+    }
+
     private int getBlackjackFaceValue(Card card) {
         switch(card.getValue()) {
             case King:
@@ -47,11 +51,11 @@ public class BlackjackHand extends Hand {
 
     private boolean canHaveHighAce(int lowAceHandValue) {
         int handValueWithHighAce = lowAceHandValue + 10;
-        return isNotBust(handValueWithHighAce);
+        return !isBust(handValueWithHighAce);
     }
 
-    private boolean isNotBust(int handTotal) {
-        return handTotal < 22;
+    private boolean isBust(int handTotal) {
+        return handTotal > 21;
     }
 
     private boolean hasAnAce() {
