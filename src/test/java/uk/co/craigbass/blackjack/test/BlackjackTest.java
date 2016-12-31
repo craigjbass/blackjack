@@ -6,40 +6,24 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import uk.co.craigbass.blackjack.Blackjack;
 import uk.co.craigbass.blackjack.Blackjack.Presenter;
-import uk.co.craigbass.playingcards.Card;
 import uk.co.craigbass.blackjack.InMemoryTable;
-import uk.co.craigbass.blackjack.Pack;
+import uk.co.craigbass.playingcards.Card;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static uk.co.craigbass.playingcards.Card.Suit.*;
 import static uk.co.craigbass.playingcards.Card.Value.*;
 
 @RunWith(HierarchicalContextRunner.class)
 public class BlackjackTest implements Presenter {
-    private InMemoryTable inMemoryGameState;
+    private InMemoryTable table;
     private Blackjack blackjack;
     private String cardsReceived = "";
     private ConfigurableLoopingPack pack;
     private int handValue;
-
-    private class ConfigurableLoopingPack implements Pack {
-        private Queue<Card> cards = new LinkedList<>();
-
-        public void add(Card card) {
-            cards.add(card);
-        }
-
-        @Override
-        public Card next() {
-            Card card = cards.remove();
-            cards.add(card);
-            return card;
-        }
-    }
+    private Boolean playerHasWon = null;
 
     @Override
     public void presentHand(PresentableHand hand) {
@@ -48,16 +32,41 @@ public class BlackjackTest implements Presenter {
         cardsReceived = cardsReceived.trim();
     }
 
-    @Before
-    public void setUp() {
-        inMemoryGameState = new InMemoryTable();
-        pack = new ConfigurableLoopingPack();
-
-
-
-        blackjack = new Blackjack(inMemoryGameState, this, pack);
+    @Override
+    public void gameOver(Ending ending) {
+        playerHasWon = ending.equals(Ending.PLAYER_WINS);
     }
 
+    @Before
+    public void setUp() {
+        table = new InMemoryTable();
+        pack = new ConfigurableLoopingPack();
+        blackjack = new Blackjack(table, this, pack);
+    }
+
+    @Test
+    public void GivenTwoKings_ThenHandValueIs20() {
+        pack.add(new Card(Spade, King));
+        blackjack.deal();
+        assertEquals(20, handValue);
+    }
+
+    @Test
+    public void GivenAJackAndAQueen_ThenHandValueIs20() {
+        pack.add(new Card(Spade, Jack));
+        pack.add(new Card(Spade, Queen));
+        blackjack.deal();
+        assertEquals(20, handValue);
+    }
+
+    @Test
+    public void GivenTwoAces_ThenHandValueIs12() {
+        pack.add(new Card(Spade, Ace));
+        pack.add(new Card(Spade, Ace));
+        blackjack.deal();
+        assertEquals(12, handValue);
+    }
+    
     public class WhenPackRepeatsCardsAceTwoFourQueen {
         @Before
         public void setUp() {
@@ -69,7 +78,7 @@ public class BlackjackTest implements Presenter {
         @Test
         public void playersCardsAreStored() {
             blackjack.deal();
-            Card[] playerCards = inMemoryGameState.getPlayersHand().getCards();
+            Card[] playerCards = table.getPlayersHand().getCards();
 
             Card firstCard = playerCards[0];
             Card secondCard = playerCards[1];
@@ -86,7 +95,7 @@ public class BlackjackTest implements Presenter {
         @Test
         public void dealerReceivesTwoCards() {
             blackjack.deal();
-            List<Card> dealerCards = inMemoryGameState.getDealerCards();
+            List<Card> dealerCards = table.getDealerCards();
 
             Card firstCard = dealerCards.get(0);
             Card secondCard = dealerCards.get(1);
@@ -108,18 +117,32 @@ public class BlackjackTest implements Presenter {
         }
     }
 
-    @Test
-    public void GivenTwoTens_ThenHandValueIs20() {
-        pack.add(new Card(Spade, Ten));
-        blackjack.deal();
-        assertEquals(20, handValue);
-    }
 
-    @Test
-    public void GivenTwoAces_ThenHandValueIs12() {
-        pack.add(new Card(Spade, Ace));
-        pack.add(new Card(Spade, Ace));
-        blackjack.deal();
-        assertEquals(12, handValue);
+    public class GivenPlayerWinsNaturally {
+        private void winningHand() {
+            pack.add(new Card(Diamond, Ace));
+            pack.add(new Card(Heart, Jack));
+        }
+
+        private void losingHand() {
+            pack.add(new Card(Spade, Two));
+            pack.add(new Card(Diamond, Three));
+            pack.add(new Card(Diamond, King));
+        }
+
+        @Before
+        public void setUp()
+        {
+            winningHand();
+            losingHand();
+        }
+
+        @Test
+        public void ThenThePlayerHasWon() {
+            blackjack.deal();
+            blackjack.stick();
+
+            assertTrue(playerHasWon);
+        }
     }
 }

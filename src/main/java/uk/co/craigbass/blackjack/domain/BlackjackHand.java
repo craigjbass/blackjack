@@ -17,11 +17,22 @@ public class BlackjackHand extends Hand {
 
     public int getValue() {
         int value = getCardsStream()
-                .mapToInt(Card::getFaceValue)
+                .mapToInt(this::getBlackjackFaceValue)
                 .sum();
 
         if (hasAnAce() && canHaveHighAce(value)) value += ADDITIONAL_VALUE_OF_HIGH_ACE;
         return value;
+    }
+
+    private int getBlackjackFaceValue(Card card) {
+        switch(card.getValue()) {
+            case King:
+            case Queen:
+            case Jack:
+                return 10;
+            default:
+                return card.getFaceValue();
+        }
     }
 
     private boolean canHaveHighAce(int lowAceHandValue) {
