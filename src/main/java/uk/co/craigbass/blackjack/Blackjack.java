@@ -37,8 +37,8 @@ public class Blackjack {
     }
 
     public interface Table {
-        void givePlayerCard(Card next);
-        void giveDealerCard(Card next);
+        void givePlayerCard(Card card);
+        void giveDealerCard(Card card);
         BlackjackHand getPlayersHand();
     }
     public interface Presenter {
